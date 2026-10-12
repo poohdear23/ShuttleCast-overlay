@@ -57,30 +57,49 @@
     if (history.length > 30) history.shift();
   }
   function change(fn) { snapshot(); fn(); render(); push(); }
-  const addPoint = (side) => change(() => { m[`score${side}`] = Math.min(m.cap, m[`score${side}`] + 1); });
-  const subPoint = (side) => change(() => { m[`score${side}`] = Math.max(0, m[`score${side}`] - 1); });
+  // แมตช์จบเมื่อมีฝั่งชนะครบเกม หรือเล่นครบจำนวนเกมที่ตั้งไว้
+  const gamesToWin = () => Math.ceil(m.matchGames / 2);
+  const matchOver = () => m.winsA >= gamesToWin() || m.winsB >= gamesToWin() || m.results.length >= m.matchGames;
+  const overToast = () => toast('แมตช์จบแล้ว — กด "ย้อนแต้ม" เพื่อแก้ หรือ "รีเซ็ตแมตช์" เพื่อเริ่มใหม่');
+  const addPoint = (side) => { if (matchOver()) return overToast(); change(() => { m[`score${side}`] = Math.min(m.cap, m[`score${side}`] + 1); }); };
+  const subPoint = (side) => { if (matchOver()) return overToast(); change(() => { m[`score${side}`] = Math.max(0, m[`score${side}`] - 1); }); };
   function undo() {
     const last = history.pop();
     if (!last) return toast('ยังไม่มีแต้มให้ย้อนกลับ');
     Object.assign(m, last); render(); push(); toast('ย้อนแต้มล่าสุดแล้ว');
   }
-  function resetGame() { change(() => { m.scoreA = 0; m.scoreB = 0; }); toast('รีเซ็ตคะแนนเกมนี้แล้ว'); }
+  function resetGame() {
+    if (matchOver()) return overToast();
+    change(() => { m.scoreA = 0; m.scoreB = 0; });
+    toast('รีเซ็ตคะแนนเกมนี้แล้ว');
+  }
+  // รีเซ็ตทั้งแมตช์: คะแนน จำนวนเกมที่ชนะ และผลเกมที่ผ่านมา (ย้อนกลับด้วยปุ่ม "ย้อนแต้ม" ได้)
+  function resetMatch() {
+    if (!confirm('รีเซ็ตทั้งแมตช์?\nคะแนน จำนวนเกมที่ชนะ และผลเกมที่ผ่านมาจะถูกล้างทั้งหมด')) return;
+    change(() => { m.scoreA = 0; m.scoreB = 0; m.winsA = 0; m.winsB = 0; m.game = 1; m.results = []; });
+    toast('รีเซ็ตทั้งแมตช์แล้ว — กด "ย้อนแต้ม" ถ้ากดผิด');
+  }
   function nextGame() {
+    if (matchOver()) return overToast();
     const reached = m.scoreA >= m.target || m.scoreB >= m.target;
     const atCap = m.scoreA >= m.cap || m.scoreB >= m.cap;
     const complete = (reached && (!m.winByTwo || Math.abs(m.scoreA - m.scoreB) >= 2)) || atCap;
     if (!complete) return toast(`เกมยังไม่จบ: ต้องถึง ${m.target} แต้ม${m.winByTwo ? 'และนำ 2 แต้ม' : ''}`);
-    const need = Math.ceil(m.matchGames / 2);
-    if (m.matchGames !== 1 && (m.game >= m.matchGames || m.winsA >= need || m.winsB >= need)) return toast('แมตช์นี้ครบตามจำนวนเกมที่ตั้งไว้แล้ว');
     const winner = m.scoreA > m.scoreB ? 'A' : m.scoreB > m.scoreA ? 'B' : null;
     if (!winner) return toast('คะแนนเท่ากัน ยังบันทึกผู้ชนะไม่ได้');
-    const previous = m.game;
+    const finished = m.game;
     snapshot();
     m.results.push({ game: m.game, scoreA: m.scoreA, scoreB: m.scoreB, winner });
     m[`wins${winner}`] += 1;
-    if (m.matchGames !== 1) { m.scoreA = 0; m.scoreB = 0; m.game = Math.min(m.matchGames, m.game + 1); }
+    const name = winner === 'A' ? m.sideA : m.sideB;
+    if (matchOver()) {
+      // จบเกมสุดท้าย: เก็บคะแนนเกมนี้ไว้บนจอ และนับจำนวนเกมที่ชนะตามจริง
+      render(); push();
+      return toast(`จบแมตช์: ${name} ชนะ ${Math.max(m.winsA, m.winsB)}–${Math.min(m.winsA, m.winsB)} เกม`);
+    }
+    m.scoreA = 0; m.scoreB = 0; m.game = Math.min(m.matchGames, m.game + 1);
     render(); push();
-    toast(m.matchGames === 1 ? `บันทึกผล: ${winner === 'A' ? m.sideA : m.sideB} ชนะ` : `บันทึกผู้ชนะเกม ${previous} แล้ว`);
+    toast(`บันทึกผู้ชนะเกม ${finished} แล้ว (${name})`);
   }
 
   // ---------- แสดงผล ----------
@@ -97,9 +116,13 @@
     setText('#scoreNameAText', m.sideA); setText('#scoreNameBText', m.sideB);
     $('#scoreColorA').style.background = m.colorA; $('#scoreColorB').style.background = m.colorB;
     setText('#studioTitle', m.title || 'SHUTTLECAST');
-    setText('#scoreTitle', `GAME ${m.game} / ${m.matchGames === 1 ? 'SINGLE GAME' : `BEST OF ${m.matchGames}`}`);
+    const over = matchOver();
+    setText('#scoreTitle', over ? 'MATCH END' : `GAME ${m.game} / ${m.matchGames === 1 ? 'SINGLE GAME' : `BEST OF ${m.matchGames}`}`);
     setText('#ruleSummary', `${m.target} แต้ม • ${m.winByTwo ? 'นำ 2' : 'แต้มถึงก่อน'} • สูงสุด ${m.cap}`);
-    setText('#nextGameButton', m.matchGames === 1 ? 'จบเกม →' : 'เกมถัดไป →');
+    // กดตอนนี้แล้วแมตช์จะจบไหม: เป็นเกมสุดท้าย หรือฝั่งที่นำอยู่จะชนะครบเกมพอดี
+    const leaderWins = m.scoreA > m.scoreB ? m.winsA : m.scoreB > m.scoreA ? m.winsB : -1;
+    const endsMatch = m.game >= m.matchGames || leaderWins + 1 >= gamesToWin();
+    setText('#nextGameButton', over ? 'แมตช์จบแล้ว' : endsMatch ? 'จบแมตช์ →' : 'เกมถัดไป →');
     const set = (selector, value) => { const el = $(selector); if (document.activeElement !== el) el.value = value; };
     set('#liveTarget', m.target); set('#liveCap', m.cap); set('#liveGames', String(m.matchGames));
     $('#liveWinByTwo').checked = m.winByTwo;
@@ -202,7 +225,7 @@
   $('#backToSetup').addEventListener('click', () => { fillSetup(); showView('setup'); });
   $('#addA').addEventListener('click', () => addPoint('A')); $('#addB').addEventListener('click', () => addPoint('B'));
   $('#minusA').addEventListener('click', () => subPoint('A')); $('#minusB').addEventListener('click', () => subPoint('B'));
-  $('#undoButton').addEventListener('click', undo); $('#resetButton').addEventListener('click', resetGame); $('#nextGameButton').addEventListener('click', nextGame);
+  $('#undoButton').addEventListener('click', undo); $('#resetButton').addEventListener('click', resetGame); $('#resetMatchButton').addEventListener('click', resetMatch); $('#nextGameButton').addEventListener('click', nextGame);
   $('#posSelect').value = view.pos; $('#sponsorSelect').value = view.sponsor;
   $('#posSelect').addEventListener('change', () => { view.pos = $('#posSelect').value; refreshLink(); persistSetup(); });
   $('#sponsorSelect').addEventListener('change', () => { view.sponsor = $('#sponsorSelect').value; refreshLink(); persistSetup(); });

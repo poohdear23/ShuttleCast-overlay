@@ -28,7 +28,9 @@
     $('scoreA').textContent = pad(state.scoreA); $('scoreB').textContent = pad(state.scoreB);
     if (last && last.scoreA !== state.scoreA && state.scoreA > last.scoreA) bump($('scoreA'));
     if (last && last.scoreB !== state.scoreB && state.scoreB > last.scoreB) bump($('scoreB'));
-    $('gameLabel').textContent = `GAME ${state.game} / ${state.matchGames === 1 ? 'SINGLE' : `BEST OF ${state.matchGames}`}`;
+    const need = Math.ceil(state.matchGames / 2);
+    const over = state.winsA >= need || state.winsB >= need || state.results.length >= state.matchGames;
+    $('gameLabel').textContent = over ? 'FINAL' : `GAME ${state.game} / ${state.matchGames === 1 ? 'SINGLE' : `BEST OF ${state.matchGames}`}`;
     $('ruleLabel').textContent = `${state.target} • ${state.winByTwo ? 'นำ 2' : 'ถึงก่อนชนะ'} • MAX ${state.cap}`;
     $('history').innerHTML = state.results.slice().reverse().map((r) =>
       `<div class="h-row"><span>GAME ${r.game}</span><span class="pair"><b class="${r.winner === 'A' ? 'win' : ''}">${pad(r.scoreA)}</b><b class="${r.winner === 'B' ? 'win' : ''}">${pad(r.scoreB)}</b></span></div>`
