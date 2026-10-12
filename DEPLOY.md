@@ -1,0 +1,38 @@
+# ShuttleCast Overlay — วิธีรัน
+
+## 1. เปิดเซิร์ฟเวอร์ (ต้องมี Node.js 18+)
+```
+node server.js
+```
+เปิดที่ http://localhost:3000  (เปลี่ยนพอร์ต: `PORT=8080 node server.js`)
+คะแนนเก็บไว้ที่ `data/rooms.json` (เปลี่ยนที่เก็บด้วย `DATA_FILE=...`)
+
+## 2. ทำให้มือถือเข้าได้ผ่าน HTTPS
+- ทดสอบเร็ว: `cloudflared tunnel --url http://localhost:3000` ได้ลิงก์ https (เปลี่ยนทุกครั้ง)
+- ใช้งานจริง: โฮสต์ฟรีที่รัน Node ได้ หรือ Cloudflare named tunnel (ลิงก์ถาวร)
+- ถ้า proxy ตัด SSE overlay ยังอัปเดตได้ด้วยการ poll ทุก 4 วินาที
+
+## 3. ใช้งานวันแข่ง
+1. มือถือควบคุม: เปิด `/control` → ตั้งค่า → สร้างห้องควบคุม → คัดลอกลิงก์
+2. ส่งลิงก์ให้เครื่อง PRISM
+3. PRISM: ปัดซ้ายที่หน้าพรีวิว → Web → วางลิงก์ → ลาก/ย่อขยาย → Go Live
+
+## พารามิเตอร์ลิงก์ Overlay
+`/overlay?room=court1&pos=tr&sponsor=br&scale=1&title=0`
+- `pos` tr | tl | br | bl — ตำแหน่งแถบคะแนน
+- `sponsor` br | bl | tr | tl | 0 (ซ่อน)
+- `scale` 0.4–3 — ขยายทั้งแถบ
+- `title=0` ซ่อนชื่อรายการ
+
+## หมายเหตุ
+- ไม่มีรหัสผ่าน ใครรู้ชื่อห้องก็กดคะแนนได้ ใช้ชื่อห้องที่เดายาก
+- กติกา: ปุ่มลัด 15 (สูงสุด 21) / 21 (สูงสุด 30) หรือกรอกเอง แก้ระหว่างไลฟ์ได้
+
+## ไม่ใช้โน้ตบุ๊ก: โฮสต์ฟรีบน Render
+1. อัปโหลดไฟล์ทั้งหมดในโฟลเดอร์นี้ขึ้น GitHub repo (ลบไฟล์เก่า รวม Dockerfile เดิมออก)
+2. render.com → New → Web Service → เลือก repo
+3. Runtime: Node · Build Command: ว่าง · Start Command: `npm start` · Instance: Free
+4. ได้ลิงก์ถาวร `https://ชื่อ.onrender.com` → ใช้ `/control` และ `/overlay?room=...`
+
+ข้อจำกัดของ Free: หยุดเองเมื่อไม่มีคนใช้ 15 นาที ปลุกใหม่ใช้ ~1 นาที
+และคะแนนที่เก็บในเครื่องหายเมื่อหยุด → เปิดหน้า /control ก่อนแข่ง 5 นาที

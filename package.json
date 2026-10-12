@@ -1,0 +1,8 @@
+{
+  "name": "shuttlecast-overlay",
+  "version": "0.2.0",
+  "private": true,
+  "description": "ShuttleCast scoreboard overlay for PRISM Live Studio / OBS (Node.js, no dependencies)",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.js", "dev": "node server.js" }
+}

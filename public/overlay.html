@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShuttleCast Overlay</title>
+  <style>
+    /* 1rem = 1/80 ของความกว้างหน้าจอ → ที่ 1280px = 16px  ขยายตามขนาด widget อัตโนมัติ */
+    html { font-size: calc(100vw / 80 * var(--scale, 1)); background: transparent; }
+    body { margin: 0; background: transparent; overflow: hidden; color: #f7f0dc; font-family: Inter, "Noto Sans Thai", "Sarabun", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .board { position: fixed; width: min(30.6rem, calc(100vw - 2.2rem)); padding: 0.9rem 1.1rem 0.8rem; border: 0.125rem solid rgba(211, 169, 79, .38); border-radius: 0.9rem; background: rgba(12, 10, 8, .88); box-shadow: 0 0.5rem 1.6rem rgba(0, 0, 0, .35); opacity: 0; transition: opacity .35s ease; }
+    .board.ready { opacity: 1; }
+    .pos-tr { top: 1.5rem; right: 1.1rem; } .pos-tl { top: 1.5rem; left: 1.1rem; }
+    .pos-br { bottom: 1.1rem; right: 1.1rem; } .pos-bl { bottom: 1.1rem; left: 1.1rem; }
+    .brand { font-size: 0.8rem; font-weight: 800; letter-spacing: .12em; color: #d3a94f; margin-bottom: 0.45rem; display: flex; justify-content: space-between; }
+    .brand span:last-child { color: rgba(247, 240, 220, .6); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing: .06em; }
+    .row { display: grid; grid-template-columns: 0.7rem 1fr 3.4rem 2.6rem; align-items: center; gap: 0.55rem; height: 2.15rem; }
+    .dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; }
+    .name { font-size: 1.12rem; font-weight: 700; color: #f5f8ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .score { font: 800 1.95rem/1 ui-monospace, "SFMono-Regular", Consolas, monospace; text-align: right; color: #fff; }
+    .score.bump { animation: bump .45s ease; }
+    @keyframes bump { 0% { transform: scale(1); color: #fff; } 35% { transform: scale(1.22); color: #f0c66b; } 100% { transform: scale(1); color: #fff; } }
+    .wins { font: 800 1.1rem ui-monospace, Consolas, monospace; text-align: center; color: #121214; background: #d3a94f; border-radius: 0.4rem; padding: 0.12rem 0; }
+    .meta { margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid rgba(255, 255, 255, .14); font: 800 0.66rem ui-monospace, Consolas, monospace; letter-spacing: .06em; color: rgba(255, 255, 255, .78); display: flex; justify-content: space-between; }
+    .history { margin-top: 0.35rem; }
+    .h-row { display: grid; grid-template-columns: 1fr 3.4rem 2.6rem; gap: 0.55rem; align-items: center; height: 1.55rem; font-weight: 700; color: rgba(255, 255, 255, .62); font-size: 0.82rem; }
+    .h-row b { font: 800 1.05rem ui-monospace, Consolas, monospace; text-align: right; color: #fff; display: block; }
+    .h-row .pair { display: flex; justify-content: flex-end; gap: 0.9rem; grid-column: 2 / 4; }
+    .h-row .pair b { min-width: 1.6rem; }
+    .h-row b.win { color: #ff7f67; }
+    .sponsor { position: fixed; right: 1.1rem; bottom: 1.1rem; width: 7.8rem; padding: 0.35rem 0.3rem 0.4rem; border-radius: 0.4rem; background: rgba(0, 0, 0, .5); text-align: center; }
+    .sponsor.sp-bl { right: auto; left: 1.1rem; } .sponsor.sp-tr { bottom: auto; top: 1.5rem; } .sponsor.sp-tl { right: auto; left: 1.1rem; bottom: auto; top: 1.5rem; }
+    .sponsor small { display: block; font-size: 0.42rem; font-weight: 600; color: rgba(255, 255, 255, .9); margin-bottom: 0.1rem; }
+    .sponsor img { display: block; width: 100%; height: auto; max-height: 6.5rem; object-fit: contain; }
+    .sponsor[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <div class="board" id="board">
+    <div class="brand"><span>SHUTTLECAST&nbsp; •&nbsp; LIVE</span><span id="title"></span></div>
+    <div class="row"><i class="dot" id="dotA"></i><span class="name" id="nameA"></span><span class="score" id="scoreA">00</span><span class="wins" id="winsA">0</span></div>
+    <div class="row"><i class="dot" id="dotB"></i><span class="name" id="nameB"></span><span class="score" id="scoreB">00</span><span class="wins" id="winsB">0</span></div>
+    <div class="meta"><span id="gameLabel"></span><span id="ruleLabel"></span></div>
+    <div class="history" id="history"></div>
+  </div>
+  <div class="sponsor" id="sponsor"><small>sponsored by</small><img src="/the-smokery-logo.png" alt="The Smokery"></div>
+  <script src="/overlay.js"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121214">
+  <title>ShuttleCast — Scoreboard Control</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><span>S</span><i></i></div>
+        <div>
+          <p class="eyebrow">BADMINTON BROADCAST</p>
+          <h1>ShuttleCast</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="connection-dot" id="connectionDot"></span>
+        <span class="connection-label" id="connectionLabel">กำลังเชื่อมต่อ</span>
+        <button class="icon-button" id="helpButton" aria-label="เปิดคู่มือ">?</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view active" id="setupView" aria-labelledby="setupTitle">
+        <div class="hero-copy">
+          <div class="live-kicker"><span class="pulse-dot"></span> SCOREBOARD CONTROL</div>
+          <h2 id="setupTitle">คุมคะแนนจากมือถือ<br><em>ขึ้นจอไลฟ์ทันที</em></h2>
+          <p>เครื่องนี้กดคะแนน ลิงก์ Overlay ใส่ใน PRISM Live Studio บนเครื่องที่ถ่ายทอด</p>
+        </div>
+
+        <div class="setup-layout">
+          <form class="panel setup-panel" id="setupForm">
+            <div class="panel-heading"><div><p class="section-label">MATCH SETUP</p><h3>ตั้งค่าการแข่งขัน</h3></div></div>
+
+            <label class="field-label" for="matchTitle">ชื่อรายการ <span>OPTIONAL</span></label>
+            <input class="text-input" id="matchTitle" maxlength="60" placeholder="เช่น รอบชิงชนะเลิศ — สนาม 1">
+
+            <label class="field-label row-label" for="room">ชื่อห้อง / สนาม <span>ROOM</span></label>
+            <input class="text-input mono" id="room" maxlength="40" value="court1" autocomplete="off" autocapitalize="off" spellcheck="false" pattern="[A-Za-z0-9_\-]{1,40}">
+            <p class="hint">ใช้ A–Z, 0–9, - และ _ เท่านั้น หลายสนามใช้ชื่อห้องไม่ซ้ำกัน</p>
+
+            <div class="field-label row-label"><span>จำนวนเกมและกติกาคะแนน</span><span>RULES</span></div>
+            <div class="preset-row" role="group" aria-label="ปุ่มลัดกติกา">
+              <button type="button" class="chip" data-preset="15">15 แต้ม · สูงสุด 21</button>
+              <button type="button" class="chip" data-preset="21">21 แต้ม · สูงสุด 30</button>
+              <span class="chip-note">หรือกรอกเองด้านล่าง</span>
+            </div>
+            <div class="rules-grid">
+              <label class="rule-field"><span>รูปแบบเกม</span><select class="text-input" id="matchGames"><option value="1">แข่ง 1 เกม</option><option value="3" selected>Best of 3 เกม</option></select></label>
+              <label class="rule-field"><span>คะแนนต่อเกม (1–30)</span><input class="text-input" id="target" type="number" min="1" max="30" step="1" value="21" inputmode="numeric"></label>
+              <label class="rule-field"><span>แต้มสูงสุด (ถึง 99)</span><input class="text-input" id="cap" type="number" min="1" max="99" step="1" value="30" inputmode="numeric"></label>
+              <label class="rule-check"><input type="checkbox" id="winByTwo" checked><span>ต้องนำ 2 แต้ม<br><small>ยกเว้นเมื่อถึงแต้มสูงสุด</small></span></label>
+            </div>
+
+            <div class="players-grid">
+              <div class="player-input side-a">
+                <div class="team-tag"><span class="team-dot"></span> SIDE A</div>
+                <div class="team-name-label"><label class="field-label" for="sideA">ผู้เล่น / ทีม A</label><label class="color-picker" title="เลือกสีทีม A"><input type="color" id="colorA" value="#d3a94f"><span>สีทีม</span></label></div>
+                <input class="text-input" id="sideA" maxlength="40" placeholder="เช่น K. Axelsen" value="ทีมฟ้า">
+              </div>
+              <div class="player-input side-b">
+                <div class="team-tag"><span class="team-dot"></span> SIDE B</div>
+                <div class="team-name-label"><label class="field-label" for="sideB">ผู้เล่น / ทีม B</label><label class="color-picker" title="เลือกสีทีม B"><input type="color" id="colorB" value="#ead7aa"><span>สีทีม</span></label></div>
+                <input class="text-input" id="sideB" maxlength="40" placeholder="เช่น C. Marin" value="ทีมแดง">
+              </div>
+            </div>
+
+            <div class="setup-note"><span class="note-icon">i</span><span>แก้ชื่อ คะแนน และกติการะหว่างไลฟ์ได้ทุกเมื่อ</span></div>
+            <button class="primary-button full" type="submit"><span>สร้างห้องควบคุม</span><strong>→</strong></button>
+          </form>
+
+          <aside class="panel preview-card">
+            <div class="preview-card-top"><span class="section-label">SCOREBOARD PREVIEW</span><span class="mini-live"><span class="pulse-dot"></span> READY</span></div>
+            <div class="mock-court">
+              <div class="court-lines"></div>
+              <div class="mock-shuttle">✦</div>
+              <div class="mock-score">
+                <div><span><i class="preview-color" id="previewColorA"></i><span id="previewA">ทีมฟ้า</span></span><b>00</b></div>
+                <div><span><i class="preview-color" id="previewColorB"></i><span id="previewB">ทีมแดง</span></span><b>00</b></div>
+              </div>
+              <div class="mock-camera-label">PRISM • OVERLAY PREVIEW</div>
+            </div>
+            <div class="preview-caption"><span>Overlay ลอยบนภาพกล้องใน PRISM</span><span class="arrow">↗</span></div>
+          </aside>
+        </div>
+        <div class="setup-footer"><span>SHUTTLECAST / OVERLAY</span><span>สำหรับผู้จัดแข่งและสนามอิสระ</span></div>
+      </section>
+
+      <section class="view" id="studioView" aria-labelledby="studioTitle">
+        <div class="studio-header">
+          <div>
+            <p class="section-label">SCOREBOARD CONTROL / <span id="studioTitle">RALLY NIGHT</span></p>
+            <div class="studio-title-row"><h2>สนามพร้อมแล้ว</h2><span class="status-chip" id="syncChip"><span class="pulse-dot"></span> SYNC</span></div>
+          </div>
+          <button class="ghost-button" id="backToSetup">แก้ค่าการแข่ง</button>
+        </div>
+
+        <div class="studio-grid">
+          <section class="stage-wrap">
+            <div class="stage checker"><iframe id="preview" title="ตัวอย่าง Overlay" loading="lazy"></iframe></div>
+            <div class="link-box">
+              <div class="link-copy"><span class="section-label">OVERLAY URL</span><code id="overlayUrl"></code></div>
+              <button class="primary-button compact" id="copyLink">คัดลอกลิงก์</button>
+            </div>
+            <div class="stage-toolbar">
+              <label class="select-inline">ตำแหน่ง
+                <select id="posSelect"><option value="tr">บนขวา</option><option value="tl">บนซ้าย</option><option value="br">ล่างขวา</option><option value="bl">ล่างซ้าย</option></select>
+              </label>
+              <label class="select-inline">โลโก้สปอนเซอร์
+                <select id="sponsorSelect"><option value="br">ล่างขวา</option><option value="bl">ล่างซ้าย</option><option value="tr">บนขวา</option><option value="tl">บนซ้าย</option><option value="0">ซ่อน</option></select>
+              </label>
+              <span class="toolbar-hint">ตำแหน่งต่างๆ ถูกใส่ในลิงก์ที่คัดลอก</span>
+            </div>
+          </section>
+
+          <aside class="control-rail">
+            <section class="panel score-panel">
+              <div class="panel-heading compact-heading"><div><p class="section-label">SCOREBOARD</p><h3 id="scoreTitle">GAME 1 / BEST OF 3</h3><p class="rule-summary" id="ruleSummary"></p></div></div>
+              <div class="score-row">
+                <div class="score-side"><span class="side-label side-label-a">SIDE A</span><strong class="score-name-line"><i class="score-color" id="scoreColorA"></i><span id="scoreNameAText"></span></strong><button class="score-button plus-a" id="addA">+1</button><button class="minus-button" id="minusA">−</button></div>
+                <div class="score-number" id="scoreA">0</div>
+                <div class="score-number right-score" id="scoreB">0</div>
+                <div class="score-side align-right"><span class="side-label side-label-b">SIDE B</span><strong class="score-name-line"><span id="scoreNameBText"></span><i class="score-color" id="scoreColorB"></i></strong><button class="score-button plus-b" id="addB">+1</button><button class="minus-button" id="minusB">−</button></div>
+              </div>
+              <div class="game-strip"><span id="gameWinsA">0</span><i></i><span>เกมที่ <b id="gameNumber">1</b></span><i></i><span id="gameWinsB">0</span></div>
+              <div class="game-history" id="gameHistory" hidden></div>
+              <div class="score-actions"><button class="text-button" id="undoButton">↶ ย้อนแต้ม</button><button class="text-button danger-text" id="resetButton">รีเซ็ตเกม</button><button class="text-button" id="nextGameButton">เกมถัดไป →</button></div>
+            </section>
+
+            <section class="panel rules-panel">
+              <div class="panel-heading compact-heading"><div><p class="section-label">RULES</p><h3>กติกาคะแนน</h3></div></div>
+              <div class="preset-row">
+                <button type="button" class="chip" data-live-preset="15">15 · สูงสุด 21</button>
+                <button type="button" class="chip" data-live-preset="21">21 · สูงสุด 30</button>
+              </div>
+              <div class="rules-grid tight">
+                <label class="rule-field"><span>คะแนนต่อเกม</span><input class="text-input" id="liveTarget" type="number" min="1" max="30" step="1" inputmode="numeric"></label>
+                <label class="rule-field"><span>แต้มสูงสุด</span><input class="text-input" id="liveCap" type="number" min="1" max="99" step="1" inputmode="numeric"></label>
+                <label class="rule-field"><span>รูปแบบเกม</span><select class="text-input" id="liveGames"><option value="1">1 เกม</option><option value="3">Best of 3</option></select></label>
+                <label class="rule-check"><input type="checkbox" id="liveWinByTwo"><span>ต้องนำ 2 แต้ม</span></label>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-backdrop" id="helpModal" hidden>
+      <section class="modal panel" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <div class="modal-heading"><div><p class="section-label">HOW TO</p><h3 id="helpTitle">ใช้กับ PRISM Live Studio</h3></div><button class="close-button" id="closeHelp">×</button></div>
+        <ol class="help-list">
+          <li>เครื่องนี้ (เครื่องควบคุม): ตั้งค่าแข่ง → สร้างห้องควบคุม → กด <b>คัดลอกลิงก์</b></li>
+          <li>ส่งลิงก์ให้เครื่องที่ถ่ายทอด (LINE / Messenger)</li>
+          <li>PRISM: ปัดซ้ายที่หน้าพรีวิว → เมนู <b>Web</b> → วางลิงก์ → บันทึก</li>
+          <li>ลากและย่อ/ขยายแถบคะแนนให้ไม่บังลูก แล้วกด Go Live</li>
+          <li>กดคะแนนบนเครื่องนี้ จอไลฟ์เปลี่ยนตาม</li>
+        </ol>
+        <p class="modal-intro">ถ้าไม่เห็นแถบคะแนนใน PRISM: เช็กว่าเครื่องถ่ายทอดมีเน็ต และลิงก์ถูกต้องทั้งชื่อห้อง</p>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <footer class="site-footer"><div class="sponsor-footer"><span class="sponsor-kicker">Sponsored by</span><img src="/the-smokery-logo.png" alt="The Smokery"><span class="sponsor-name">THE SMOKERY</span></div><span>SHUTTLECAST <b>•</b> OVERLAY</span><span>v0.2</span></footer>
+  </div>
+  <script src="/control.js"></script>
+</body>
+</html>
