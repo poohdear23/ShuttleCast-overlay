@@ -211,7 +211,10 @@
   }
 
   // ---------- events ----------
-  loadSetup(); fillSetup(); render(); refreshLink();
+  loadSetup();
+  // เปิดด้วยลิงก์ /control?room=ชื่อห้อง (ส่งต่อให้เครื่องอื่น) → เข้าห้องเดิมพร้อมคะแนนปัจจุบัน
+  { const fromLink = new URLSearchParams(location.search).get('room'); if (/^[A-Za-z0-9_-]{1,40}$/.test(fromLink || '')) room = fromLink; }
+  fillSetup(); render(); refreshLink();
   $('#sideA').addEventListener('input', updateSetupPreview); $('#sideB').addEventListener('input', updateSetupPreview);
   $('#colorA').addEventListener('input', updateSetupPreview); $('#colorB').addEventListener('input', updateSetupPreview);
   document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
@@ -238,6 +241,15 @@
     const link = overlayLink();
     try { await navigator.clipboard.writeText(link); toast('คัดลอกลิงก์ Overlay แล้ว'); }
     catch { const range = document.createRange(); range.selectNodeContents($('#overlayUrl')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); toast('เลือกลิงก์ไว้แล้ว — กดคัดลอกเอง'); }
+  });
+  $('#copyControl').addEventListener('click', async () => {
+    const link = `${location.origin}/control?room=${encodeURIComponent(room)}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'ShuttleCast — หน้าควบคุมคะแนน', url: link }); return; }
+      catch (error) { if (error && error.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(link); toast('คัดลอกลิงก์หน้าควบคุมแล้ว'); }
+    catch { window.prompt('คัดลอกลิงก์นี้ส่งให้เครื่องอื่น', link); }
   });
   $('#helpButton').addEventListener('click', () => { $('#helpModal').hidden = false; });
   $('#closeHelp').addEventListener('click', () => { $('#helpModal').hidden = true; });
