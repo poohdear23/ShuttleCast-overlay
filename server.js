@@ -117,7 +117,17 @@ function routeApi(req, res, url) {
   const room = getRoom(id);
   if (!room) return sendJson(res, 503, { ok: false, error: 'too_many_rooms' });
 
-  if (match[2] === 'state' && req.method === 'GET') return sendJson(res, 200, { ok: true, state: room.state, rev: room.rev });
+  // ?o=1 = คำขอจากหน้า overlay จริง (ไม่นับ preview ในหน้าควบคุม) ใช้บอกหน้าควบคุมว่ามี overlay เชื่อมอยู่กี่เครื่อง
+  const isOverlay = url.searchParams.get('o') === '1';
+  const overlays = () => {
+    const live = [...room.clients].filter((client) => client.isOverlay).length;
+    return live || (Date.now() - (room.polledAt || 0) < 10000 ? 1 : 0);
+  };
+
+  if (match[2] === 'state' && req.method === 'GET') {
+    if (isOverlay) room.polledAt = Date.now();
+    return sendJson(res, 200, { ok: true, state: room.state, rev: room.rev, overlays: overlays() });
+  }
 
   if (match[2] === 'state' && req.method === 'POST') {
     return readJson(req).then((body) => {
@@ -127,7 +137,7 @@ function routeApi(req, res, url) {
       room.rev += 1;
       saveRooms();
       broadcast(room);
-      sendJson(res, 200, { ok: true, rev: room.rev });
+      sendJson(res, 200, { ok: true, rev: room.rev, overlays: overlays() });
     }).catch((error) => sendJson(res, 400, { ok: false, error: error.message || 'bad_request' }));
   }
 
@@ -139,6 +149,7 @@ function routeApi(req, res, url) {
       'X-Accel-Buffering': 'no'
     });
     res.write(`retry: 2000\ndata: ${JSON.stringify({ state: room.state, rev: room.rev })}\n\n`);
+    res.isOverlay = isOverlay;
     room.clients.add(res);
     const heartbeat = setInterval(() => res.write(': ping\n\n'), 20000);
     req.on('close', () => { clearInterval(heartbeat); room.clients.delete(res); });
@@ -175,4 +186,11 @@ const server = http.createServer((req, res) => {
 
 loadRooms();
 server.listen(PORT, '0.0.0.0', () => console.log(`ShuttleCast Overlay listening on 0.0.0.0:${PORT}`));
-process.on('SIGTERM', () => server.close(() => process.exit(0)));
+// ปิดเครื่อง/deploy ใหม่: ปิดการเชื่อมต่อ SSE ที่ค้างอยู่ (ไม่งั้น server.close รอไม่จบ) แล้วออกเลย
+function shutdown() {
+  for (const room of rooms.values()) for (const client of room.clients) { try { client.end(); } catch {} }
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1500).unref();
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

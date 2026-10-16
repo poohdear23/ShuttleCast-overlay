@@ -13,6 +13,8 @@
   let history = [];
   let dirty = false;
   let sending = false;
+  let studioOn = false;
+  let offline = false;
   const view = { pos: 'tr', sponsor: 'br' };
 
   const toast = (message) => {
@@ -38,7 +40,9 @@
     try {
       const response = await fetch(apiUrl('state'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: m }) });
       if (!response.ok) throw new Error('send_failed');
+      offline = false;
       setSync('live', 'ส่งคะแนนแล้ว');
+      try { showOverlays((await response.json()).overlays); } catch {}
     } catch {
       dirty = true; setSync('', 'ส่งไม่สำเร็จ — ลองใหม่อัตโนมัติ');
     } finally { sending = false; }
@@ -137,7 +141,7 @@
   }
   function refreshLink() {
     setText('#overlayUrl', overlayLink());
-    const src = `/overlay?${new URLSearchParams({ room, pos: view.pos, sponsor: view.sponsor })}`;
+    const src = `/overlay?${new URLSearchParams({ room, pos: view.pos, sponsor: view.sponsor, preview: '1' })}`;
     const frame = $('#preview');
     if (frame.getAttribute('src') !== src) frame.setAttribute('src', src);
   }
@@ -169,6 +173,7 @@
   function showView(name) {
     $('#setupView').classList.toggle('active', name === 'setup');
     $('#studioView').classList.toggle('active', name === 'studio');
+    studioOn = name === 'studio';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function setRules(target, cap) {
@@ -237,6 +242,27 @@
   $('#helpButton').addEventListener('click', () => { $('#helpModal').hidden = false; });
   $('#closeHelp').addEventListener('click', () => { $('#helpModal').hidden = true; });
   $('#helpModal').addEventListener('click', (event) => { if (event.target.id === 'helpModal') $('#helpModal').hidden = true; });
+
+  // ---------- สถานะ Overlay + ส่งคะแนนซ้ำเมื่อเซิร์ฟเวอร์ลืมห้อง ----------
+  function showOverlays(count) {
+    const el = $('#overlayStatus');
+    if (!el || typeof count !== 'number') return;
+    el.classList.toggle('ok', count > 0);
+    el.textContent = count > 0
+      ? `● Overlay เชื่อมห้อง "${room}" อยู่ (${count} เครื่อง)`
+      : `○ ยังไม่มี Overlay เชื่อมห้อง "${room}" — เช็กว่าลิงก์ใน PRISM มี room=${room}`;
+  }
+  async function checkServer() {
+    if (!studioOn) return;
+    try {
+      const data = await (await fetch(apiUrl('state'), { cache: 'no-store' })).json();
+      if (offline) { offline = false; setSync('live', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว'); }
+      showOverlays(data.overlays);
+      // เซิร์ฟเวอร์ลืมห้อง (Render หลับ/รีสตาร์ท) → ส่งคะแนนปัจจุบันขึ้นใหม่ ให้ overlay กลับมาแสดง
+      if (!data.state && !dirty && !sending) { push(); toast('เซิร์ฟเวอร์เพิ่งตื่น — ส่งคะแนนขึ้นใหม่แล้ว'); }
+    } catch { offline = true; setSync('', 'ติดต่อเซิร์ฟเวอร์ไม่ได้'); }
+  }
+  setInterval(checkServer, 5000);
 
   resumeFromServer();
 })();

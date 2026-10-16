@@ -39,20 +39,26 @@
     board.classList.add('ready');
   }
 
+  // เทียบเนื้อหาแทนเลข rev: ถ้าเซิร์ฟเวอร์รีสตาร์ท (Render หลับ) เลข rev เริ่มนับใหม่ จะไม่พลาดการอัปเดต
+  let lastJson = null;
   function apply(data) {
-    if (!data || typeof data.rev !== 'number' || data.rev === lastRev) return;
-    lastRev = data.rev;
+    if (!data || typeof data.rev !== 'number') return;
+    const json = JSON.stringify(data.state);
+    if (json === lastJson) return;
+    lastJson = json;
     render(data.state);
   }
 
+  // o=1 บอกเซิร์ฟเวอร์ว่าเป็น overlay จริง (preview ในหน้าควบคุมใส่ ?preview=1 จึงไม่นับ)
+  const flag = q.get('preview') === '1' ? '' : '?o=1';
   // SSE เป็นหลัก ต่อใหม่เองเมื่อหลุด + poll สำรองทุก 4 วินาที (เผื่อ proxy บัฟเฟอร์ SSE)
   function connect() {
-    const source = new EventSource(`/api/room/${room}/events`);
+    const source = new EventSource(`/api/room/${room}/events${flag}`);
     source.onmessage = (event) => { try { apply(JSON.parse(event.data)); } catch {} };
     source.onerror = () => { source.close(); setTimeout(connect, 2000); };
   }
   async function poll() {
-    try { apply(await (await fetch(`/api/room/${room}/state`, { cache: 'no-store' })).json()); } catch {}
+    try { apply(await (await fetch(`/api/room/${room}/state${flag}`, { cache: 'no-store' })).json()); } catch {}
   }
   connect();
   poll();
