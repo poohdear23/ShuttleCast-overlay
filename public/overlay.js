@@ -1,5 +1,5 @@
 // หน้า Overlay สำหรับ PRISM / OBS Browser Source
-// พารามิเตอร์: ?room=court1  &pos=tr|tl|br|bl  &sponsor=br|bl|tr|tl|0  &scale=1.2  &title=0  (ขนาด S/M/L ตั้งจากหน้าควบคุม)
+// พารามิเตอร์: ?room=court1  &pos=tr|tl|br|bl  &sponsor=br|bl|tr|tl|0  &scale=1.2  &title=0  (ขนาด S/M ตั้งจากหน้าควบคุม)
 (() => {
   const q = new URLSearchParams(location.search);
   const room = /^[A-Za-z0-9_-]{1,40}$/.test(q.get('room') || '') ? q.get('room') : 'court1';
@@ -22,7 +22,7 @@
     const board = $('board');
     if (!state) { board.classList.remove('ready'); return; }
     // ขนาด S/M/L มาจากหน้าควบคุม (เปลี่ยนสด) คูณกับ ?scale= ในลิงก์
-    document.documentElement.style.setProperty('--scale', scale * ({ s: 0.8, m: 1, l: 1.3 }[state.size] || 1));
+    document.documentElement.style.setProperty('--scale', scale * ({ s: 0.85, m: 1 }[state.size] || 1));
     $('title').textContent = q.get('title') === '0' ? '' : state.title;
     $('nameA').textContent = state.sideA; $('nameB').textContent = state.sideB;
     $('dotA').style.background = state.colorA; $('dotB').style.background = state.colorB;

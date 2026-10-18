@@ -55,7 +55,7 @@
     m.target = clampInt(m.target, 1, 30, 21);
     m.cap = clampInt(m.cap, m.target, 99, Math.max(m.target, 30));
     m.matchGames = m.matchGames === 1 ? 1 : 3;
-    if (!['s', 'm', 'l'].includes(m.size)) m.size = 'm';
+    if (!['s', 'm'].includes(m.size)) m.size = 'm';
   }
   function snapshot() {
     history.push({ scoreA: m.scoreA, scoreB: m.scoreB, winsA: m.winsA, winsB: m.winsB, game: m.game, results: m.results.map((r) => ({ ...r })) });
