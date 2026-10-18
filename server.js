@@ -83,6 +83,7 @@ function cleanState(input) {
     winsA: int(input.winsA, 0, 5, 0),
     winsB: int(input.winsB, 0, 5, 0),
     game: int(input.game, 1, 5, 1),
+    size: ['s', 'm', 'l'].includes(input.size) ? input.size : 'm',
     results
   };
 }

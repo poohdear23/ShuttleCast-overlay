@@ -5,7 +5,7 @@
 
   const defaults = () => ({
     title: '', sideA: 'ทีมฟ้า', sideB: 'ทีมแดง', colorA: '#d3a94f', colorB: '#ead7aa',
-    matchGames: 3, target: 21, cap: 30, winByTwo: true,
+    matchGames: 3, target: 21, cap: 30, winByTwo: true, size: 'm',
     scoreA: 0, scoreB: 0, winsA: 0, winsB: 0, game: 1, results: []
   });
   let m = defaults();
@@ -55,6 +55,7 @@
     m.target = clampInt(m.target, 1, 30, 21);
     m.cap = clampInt(m.cap, m.target, 99, Math.max(m.target, 30));
     m.matchGames = m.matchGames === 1 ? 1 : 3;
+    if (!['s', 'm', 'l'].includes(m.size)) m.size = 'm';
   }
   function snapshot() {
     history.push({ scoreA: m.scoreA, scoreB: m.scoreB, winsA: m.winsA, winsB: m.winsB, game: m.game, results: m.results.map((r) => ({ ...r })) });
@@ -130,6 +131,10 @@
     const set = (selector, value) => { const el = $(selector); if (document.activeElement !== el) el.value = value; };
     set('#liveTarget', m.target); set('#liveCap', m.cap); set('#liveGames', String(m.matchGames));
     $('#liveWinByTwo').checked = m.winByTwo;
+    document.querySelectorAll('[data-size]').forEach((button) => {
+      const on = button.dataset.size === m.size;
+      button.classList.toggle('active', on); button.setAttribute('aria-pressed', String(on));
+    });
     renderHistory();
   }
 
@@ -158,14 +163,14 @@
     updateSetupPreview();
   }
   function persistSetup() {
-    try { localStorage.setItem(STORE, JSON.stringify({ room, title: m.title, sideA: m.sideA, sideB: m.sideB, colorA: m.colorA, colorB: m.colorB, matchGames: m.matchGames, target: m.target, cap: m.cap, winByTwo: m.winByTwo, view })); } catch {}
+    try { localStorage.setItem(STORE, JSON.stringify({ room, title: m.title, sideA: m.sideA, sideB: m.sideB, colorA: m.colorA, colorB: m.colorB, matchGames: m.matchGames, target: m.target, cap: m.cap, winByTwo: m.winByTwo, size: m.size, view })); } catch {}
   }
   function loadSetup() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE));
       if (!saved) return;
       room = /^[A-Za-z0-9_-]{1,40}$/.test(saved.room || '') ? saved.room : room;
-      for (const key of ['title', 'sideA', 'sideB', 'colorA', 'colorB', 'matchGames', 'target', 'cap', 'winByTwo']) if (saved[key] !== undefined) m[key] = saved[key];
+      for (const key of ['title', 'sideA', 'sideB', 'colorA', 'colorB', 'matchGames', 'target', 'cap', 'winByTwo', 'size']) if (saved[key] !== undefined) m[key] = saved[key];
       if (saved.view) Object.assign(view, saved.view);
       normalizeRules();
     } catch {}
@@ -234,6 +239,10 @@
   $('#addA').addEventListener('click', () => addPoint('A')); $('#addB').addEventListener('click', () => addPoint('B'));
   $('#minusA').addEventListener('click', () => subPoint('A')); $('#minusB').addEventListener('click', () => subPoint('B'));
   $('#undoButton').addEventListener('click', undo); $('#resetButton').addEventListener('click', resetGame); $('#resetMatchButton').addEventListener('click', resetMatch); $('#nextGameButton').addEventListener('click', nextGame);
+  // ขนาดแถบคะแนน S/M/L: เปลี่ยนแล้ว overlay ใน PRISM เปลี่ยนสด ไม่ต้องวางลิงก์ใหม่
+  document.querySelectorAll('[data-size]').forEach((button) => button.addEventListener('click', () => {
+    m.size = button.dataset.size; render(); push(); persistSetup();
+  }));
   $('#posSelect').value = view.pos; $('#sponsorSelect').value = view.sponsor;
   $('#posSelect').addEventListener('change', () => { view.pos = $('#posSelect').value; refreshLink(); persistSetup(); });
   $('#sponsorSelect').addEventListener('change', () => { view.sponsor = $('#sponsorSelect').value; refreshLink(); persistSetup(); });

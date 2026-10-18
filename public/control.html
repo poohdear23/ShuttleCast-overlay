@@ -109,13 +109,18 @@
             <p class="overlay-status" id="overlayStatus">กำลังตรวจสถานะ Overlay…</p>
             <button class="secondary-button compact full share-control" id="copyControl">ส่งลิงก์หน้าควบคุมให้เครื่องอื่น</button>
             <div class="stage-toolbar">
+              <span class="size-group" role="group" aria-label="ขนาดแถบคะแนน">ขนาด
+                <button type="button" class="chip size-chip" data-size="s" aria-pressed="false">S</button>
+                <button type="button" class="chip size-chip" data-size="m" aria-pressed="true">M</button>
+                <button type="button" class="chip size-chip" data-size="l" aria-pressed="false">L</button>
+              </span>
               <label class="select-inline">ตำแหน่ง
                 <select id="posSelect"><option value="tr">บนขวา</option><option value="tl">บนซ้าย</option><option value="br">ล่างขวา</option><option value="bl">ล่างซ้าย</option></select>
               </label>
               <label class="select-inline">โลโก้สปอนเซอร์
                 <select id="sponsorSelect"><option value="br">ล่างขวา</option><option value="bl">ล่างซ้าย</option><option value="tr">บนขวา</option><option value="tl">บนซ้าย</option><option value="0">ซ่อน</option></select>
               </label>
-              <span class="toolbar-hint">ตำแหน่งต่างๆ ถูกใส่ในลิงก์ที่คัดลอก</span>
+              <span class="toolbar-hint">ขนาดเปลี่ยนสดทันที · ตำแหน่งอยู่ในลิงก์ที่คัดลอก</span>
             </div>
           </section>
 
