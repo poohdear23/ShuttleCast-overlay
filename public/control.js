@@ -15,7 +15,7 @@
   let sending = false;
   let studioOn = false;
   let offline = false;
-  const view = { pos: 'tr', sponsor: 'br' };
+  const view = { pos: 'tr', sponsor: 'bl' };
 
   const toast = (message) => {
     const el = $('#toast'); el.textContent = message; el.classList.add('show');
@@ -141,7 +141,7 @@
   function overlayLink() {
     const params = new URLSearchParams({ room });
     if (view.pos !== 'tr') params.set('pos', view.pos);
-    if (view.sponsor !== 'br') params.set('sponsor', view.sponsor);
+    if (view.sponsor !== 'bl') params.set('sponsor', view.sponsor);
     return `${location.origin}/overlay?${params}`;
   }
   function refreshLink() {
@@ -172,7 +172,7 @@
       room = /^[A-Za-z0-9_-]{1,40}$/.test(saved.room || '') ? saved.room : room;
       for (const key of ['title', 'sideA', 'sideB', 'colorA', 'colorB', 'matchGames', 'target', 'cap', 'winByTwo', 'size']) if (saved[key] !== undefined) m[key] = saved[key];
       if (saved.view) Object.assign(view, saved.view);
-      if (!['br', 'bl', 'tr', 'tl'].includes(view.sponsor)) view.sponsor = 'br'; // โลโก้สปอนเซอร์ซ่อนไม่ได้
+      if (!['br', 'bl', 'tr', 'tl'].includes(view.sponsor)) view.sponsor = 'bl'; // โลโก้สปอนเซอร์ซ่อนไม่ได้
       normalizeRules();
     } catch {}
   }

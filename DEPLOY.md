@@ -18,9 +18,9 @@ node server.js
 3. PRISM: ปัดซ้ายที่หน้าพรีวิว → Web → วางลิงก์ → ลาก/ย่อขยาย → Go Live
 
 ## พารามิเตอร์ลิงก์ Overlay
-`/overlay?room=court1&pos=tr&sponsor=br&scale=1&title=0`
+`/overlay?room=court1&pos=tr&sponsor=bl&scale=1&title=0`
 - `pos` tr | tl | br | bl — ตำแหน่งแถบคะแนน
-- `sponsor` br | bl | tr | tl — ตำแหน่งโลโก้สปอนเซอร์ (ล็อกแสดงเสมอ ซ่อนไม่ได้)
+- `sponsor` bl (ค่าเริ่มต้น) | br | tr | tl — ตำแหน่งโลโก้สปอนเซอร์ (ล็อกแสดงเสมอ ซ่อนไม่ได้)
 - `scale` 0.4–3 — ขยายทั้งแถบ
 - ขนาด S/M/L (0.8 / 1 / 1.3 เท่า) ปรับสดจากหน้าควบคุม ไม่อยู่ในลิงก์ คูณกับ scale
 - `title=0` ซ่อนชื่อรายการ
