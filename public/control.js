@@ -172,6 +172,7 @@
       room = /^[A-Za-z0-9_-]{1,40}$/.test(saved.room || '') ? saved.room : room;
       for (const key of ['title', 'sideA', 'sideB', 'colorA', 'colorB', 'matchGames', 'target', 'cap', 'winByTwo', 'size']) if (saved[key] !== undefined) m[key] = saved[key];
       if (saved.view) Object.assign(view, saved.view);
+      if (!['br', 'bl', 'tr', 'tl'].includes(view.sponsor)) view.sponsor = 'br'; // โลโก้สปอนเซอร์ซ่อนไม่ได้
       normalizeRules();
     } catch {}
   }

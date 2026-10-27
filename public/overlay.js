@@ -1,16 +1,18 @@
 // หน้า Overlay สำหรับ PRISM / OBS Browser Source
-// พารามิเตอร์: ?room=court1  &pos=tr|tl|br|bl  &sponsor=br|bl|tr|tl|0  &scale=1.2  &title=0  (ขนาด S/M ตั้งจากหน้าควบคุม)
+// พารามิเตอร์: ?room=court1  &pos=tr|tl|br|bl  &sponsor=br|bl|tr|tl (ซ่อนไม่ได้)  &scale=1.2  &title=0  (ขนาด S/M ตั้งจากหน้าควบคุม)
 (() => {
   const q = new URLSearchParams(location.search);
   const room = /^[A-Za-z0-9_-]{1,40}$/.test(q.get('room') || '') ? q.get('room') : 'court1';
   const pos = ['tr', 'tl', 'br', 'bl'].includes(q.get('pos')) ? q.get('pos') : 'tr';
-  const sponsorPos = q.get('sponsor') === null ? 'br' : q.get('sponsor');
+  // ล็อกโลโก้สปอนเซอร์: เลือกได้แค่ตำแหน่ง ซ่อนไม่ได้ (ค่าอื่น รวมถึง 0 = ล่างขวา)
+  const sponsorPos = ['br', 'bl', 'tr', 'tl'].includes(q.get('sponsor')) ? q.get('sponsor') : 'br';
   const scale = Math.max(0.4, Math.min(3, Number(q.get('scale')) || 1));
   const $ = (id) => document.getElementById(id);
 
   document.documentElement.style.setProperty('--scale', scale);
   $('board').classList.add(`pos-${pos}`);
-  if (sponsorPos === '0') $('sponsor').hidden = true; else $('sponsor').classList.add(`sp-${sponsorPos}`);
+  $('sponsor').hidden = false;
+  $('sponsor').classList.add(`sp-${sponsorPos}`);
 
   const pad = (n) => String(n).padStart(2, '0');
   let lastRev = -1;

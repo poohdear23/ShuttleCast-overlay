@@ -20,7 +20,7 @@ node server.js
 ## พารามิเตอร์ลิงก์ Overlay
 `/overlay?room=court1&pos=tr&sponsor=br&scale=1&title=0`
 - `pos` tr | tl | br | bl — ตำแหน่งแถบคะแนน
-- `sponsor` br | bl | tr | tl | 0 (ซ่อน)
+- `sponsor` br | bl | tr | tl — ตำแหน่งโลโก้สปอนเซอร์ (ล็อกแสดงเสมอ ซ่อนไม่ได้)
 - `scale` 0.4–3 — ขยายทั้งแถบ
 - ขนาด S/M/L (0.8 / 1 / 1.3 เท่า) ปรับสดจากหน้าควบคุม ไม่อยู่ในลิงก์ คูณกับ scale
 - `title=0` ซ่อนชื่อรายการ
